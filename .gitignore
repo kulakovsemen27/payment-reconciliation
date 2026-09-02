@@ -16,4 +16,9 @@ __pycache__/
 *.duckdb
 *.duckdb.wal
 
+# dbt
+/dbt/logs/
+logs/
+.user.yml
+
 PLAN.md
