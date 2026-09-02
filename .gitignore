@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+
+# Python environment and cache
+.venv/
+__pycache__/
+*.pyc
+
+# Local credentials and configuration
+.env
+.env.*
+!.env.example
+/dbt/profiles.yml
+
+PLAN.md
