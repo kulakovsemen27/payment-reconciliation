@@ -18,6 +18,7 @@ __pycache__/
 
 # dbt
 /dbt/logs/
+/dbt/target/
 logs/
 .user.yml
 
