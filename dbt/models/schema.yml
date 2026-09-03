@@ -69,6 +69,62 @@ models:
       - name: source_file
         description: Relative source filename; no synthetic row number is introduced.
 
+  - name: paypal_eu_activity
+    description: >-
+      PayPal EU Windows-1252 semicolon export, preserving all source records as text.
+
+  - name: stg_paypal_eu
+    description: >-
+      One distinct PayPal EU source record, deduplicated before casting.
+      Decimal commas are parsed without cent rounding; dates use DD/MM/YYYY only.
+      Suspected source date errors are investigated during reconciliation, not corrected here.
+    columns:
+      - name: transaction_id
+        description: Provider operation reference; differing payloads with the same ID are retained.
+        data_tests:
+          - not_null
+      - name: reference_txn_id
+        description: Optional reference to the original payment.
+      - name: invoice_id
+        description: Optional merchant order reference, not yet matched to engine.
+      - name: transaction_type
+        description: Original PayPal Type, before canonical mapping.
+        data_tests:
+          - not_null
+      - name: status
+        description: Original PayPal status.
+        data_tests:
+          - not_null
+      - name: payer_name
+        description: Original Name decoded from Windows-1252.
+      - name: currency
+        data_tests:
+          - not_null
+      - name: gross_amount
+        description: Source Gross as DECIMAL(20,8).
+        data_tests:
+          - not_null
+      - name: fee_amount
+        description: Source Fee as DECIMAL(20,8), retaining its original sign.
+        data_tests:
+          - not_null
+      - name: net_amount
+        description: Source Net as DECIMAL(20,8); Gross plus Fee for financial rows.
+        data_tests:
+          - not_null
+      - name: date_raw
+        description: Original date text, retained for investigating source date anomalies.
+      - name: time_raw
+        description: Original time text.
+      - name: time_zone
+        description: Supplied timezone, used explicitly in parsing.
+      - name: event_timestamp_utc
+        description: Timezone-aware timestamp parsed as DD/MM/YYYY; invalid values become NULL, valid but incorrect dates require downstream checks.
+        data_tests:
+          - not_null
+      - name: source_file
+        description: Relative source filename, without synthetic row numbers.
+
   - name: stg_payment_engine
     description: >-
       Typed internal payment-engine snapshot, one row per txn_id.
