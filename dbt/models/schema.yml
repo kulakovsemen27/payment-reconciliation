@@ -125,6 +125,93 @@ models:
       - name: source_file
         description: Relative source filename, without synthetic row numbers.
 
+  - name: dlocal_transactions
+    description: dLocal CSV records as text, preserving copies and relative source_file.
+
+  - name: stg_dlocal
+    description: Exact copies removed before parsing; amounts in major units, source statuses and FX direction unchanged.
+    columns:
+      - name: transaction_id
+        data_tests: [not_null]
+      - name: transaction_type
+        data_tests: [not_null]
+      - name: status
+        data_tests: [not_null]
+      - name: currency
+        data_tests: [not_null]
+      - name: currency_exponent
+        description: Source minor-unit exponent; local_amount supports 0–8 fractional digits.
+        data_tests: [not_null]
+      - name: local_amount
+        description: DECIMAL(20,8) major units; source integer multiplied by 10 to the power of minus currency_exponent.
+        data_tests: [not_null]
+      - name: fx_rate
+        description: Source rate as DECIMAL(18,10), local currency per USD; not yet inverted.
+        data_tests: [not_null]
+      - name: usd_amount
+        data_tests: [not_null]
+      - name: fee_usd
+        description: Reported fee in USD, retaining the source sign.
+        data_tests: [not_null]
+      - name: created_at_raw
+        description: Original UTC timestamp text.
+      - name: event_timestamp_utc
+        data_tests: [not_null]
+
+  - name: adyen_payment_accounting
+    description: Adyen CSV records as text, preserving all lifecycle events and relative source_file.
+
+  - name: stg_adyen
+    description: >-
+      Exact copies removed before parsing, never deduplicated by Psp Reference alone.
+      Debit/credit registers and fee components remain separate DECIMAL(20,8) fields;
+      empty fields stay NULL, and nonempty monetary text is checked for parse errors.
+    columns:
+      - name: psp_reference
+        description: Payment reference shared by multiple lifecycle events; not unique.
+        data_tests: [not_null]
+      - name: merchant_account
+        data_tests: [not_null]
+      - name: record_type
+        data_tests: [not_null]
+      - name: gross_currency
+        data_tests: [not_null]
+      - name: net_currency
+        data_tests: [not_null]
+      - name: creation_date_raw
+        description: Original local timestamp; interpreted using the source TimeZone field.
+      - name: event_timestamp_utc
+        data_tests: [not_null]
+
+  - name: google_play_earnings
+    description: June and July-partial reports as text, skipping each title line and retaining source_file.
+
+  - name: stg_google_play
+    description: >-
+      All Google Play report rows, including charges, refunds and fees; no deduplication
+      without a reliable event ID. Amounts use DECIMAL(20,8), rates DECIMAL(18,10).
+      No matching, fee pairing or canonical sign changes here.
+    columns:
+      - name: transaction_type
+        data_tests: [not_null]
+      - name: product_id
+        data_tests: [not_null]
+      - name: buyer_currency
+        data_tests: [not_null]
+      - name: merchant_currency
+        data_tests: [not_null]
+      - name: buyer_amount
+        data_tests: [not_null]
+      - name: merchant_amount
+        data_tests: [not_null]
+      - name: currency_conversion_rate
+        description: Reported merchant-currency units per buyer-currency unit, not recomputed.
+        data_tests: [not_null]
+      - name: time_zone
+        description: America/Los_Angeles, explicitly stated in both report headers.
+      - name: event_timestamp_utc
+        data_tests: [not_null]
+
   - name: stg_payment_engine
     description: >-
       Typed internal payment-engine snapshot, one row per txn_id.
