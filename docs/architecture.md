@@ -15,7 +15,7 @@ CSV snapshots → raw → staging → intermediate → marts → CSV reports
 | Layer | Responsibility |
 |---|---|
 | `raw` | Load immutable CSV snapshots as text. Preserve rows and non-empty values; empty fields become `NULL`. |
-| `staging` | Remove confirmed provider source copies, then parse types, dates and units without cross-source joins. Engine keeps its original 15 columns; provider staging retains filenames and parsing diagnostics. |
+| `staging` | Remove confirmed provider source copies, then parse types, dates and units without cross-source joins. Engine keeps its original 15 columns; providers retain filenames and original timestamp text.  |
 | `intermediate` | Normalize events, resolve lifecycle/version semantics, select FX, match engine/provider events and calculate expected fees. |
 | `marts` | Produce reconciliation detail, provider-by-cause summaries, fee variances, source adjustments and unexplained exceptions. |
 
