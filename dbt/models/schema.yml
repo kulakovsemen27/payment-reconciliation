@@ -229,6 +229,20 @@ models:
         description: Publication timestamp of this rate version, including timezone.
         data_tests: [not_null]
 
+  - name: fee_schedule
+    description: Contracted fee snapshot as text, without additional metadata.
+
+  - name: stg_fee_schedule
+    description: Typed tariffs keyed by psp, account and valid_from; equal typed rows deduplicated. Contract selection and fee calculations are downstream.
+    columns:
+      - name: percent_fee
+        description: Percentage points (2.5 means 2.5%, not 0.025).
+        data_tests: [not_null]
+      - name: fixed_fee
+        data_tests: [not_null]
+      - name: fixed_fee_currency
+        description: May be NULL when the fixed fee is zero; no currency is inferred.
+
   - name: stg_payment_engine
     description: >-
       Typed internal payment-engine snapshot, one row per txn_id.
