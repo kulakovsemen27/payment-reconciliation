@@ -2,13 +2,78 @@ version: 2
 
 models:
   - name: payment_engine_log
+    description: >-
+      Raw snapshot of the internal payment engine, one row per source record.
+      Original columns are loaded as text; empty fields become NULL and no rows are removed.
     columns:
       - name: txn_id
+        description: Internal transaction ID; non-null and uniqueness checks run on staging.
+
+  - name: paypal_us_activity
+    description: >-
+      One PayPal US CSV record, preserving source columns as text and all copies.
+      Empty fields become NULL; source_file identifies the relative input path.
+    columns:
+      - name: Transaction ID
+        quote: true
+        description: Provider operation reference; intentionally not unique in this export.
+
+  - name: stg_paypal_us
+    description: >-
+      One distinct PayPal US source record after removing exact copies before type conversion.
+    columns:
+      - name: transaction_id
+        description: Original Transaction ID; exact copies removed, differing payloads retained without a blanket unique test.
         data_tests:
           - not_null
-          - unique
+      - name: reference_txn_id
+        description: Optional reference to the original payment, not a replacement for transaction_id.
+      - name: invoice_id
+        description: Merchant invoice/order reference, retained without matching to engine.
+      - name: transaction_type
+        description: Original PayPal Type, before canonical operation mapping.
+        data_tests:
+          - not_null
+      - name: status
+        description: Original PayPal status; these values define this export's supported states.
+        data_tests:
+          - not_null
+      - name: payer_name
+        description: Original Name field; not used as a matching identifier.
+      - name: currency
+        description: Currency of Gross, Fee and Net in this export.
+        data_tests:
+          - not_null
+      - name: gross_amount
+        description: Source Gross as DECIMAL(20,8); denied attempts still carry attempted amounts.
+        data_tests:
+          - not_null
+      - name: fee_amount
+        description: Source Fee as DECIMAL(20,8); charged fees are negative, not positive costs yet.
+        data_tests:
+          - not_null
+      - name: net_amount
+        description: Source Net as DECIMAL(20,8); equals Gross plus signed Fee for Completed/Refunded rows.
+        data_tests:
+          - not_null
+      - name: date_raw
+        description: Original MM/DD/YYYY date text.
+      - name: time_raw
+        description: Original HH:MM:SS time text.
+      - name: time_zone
+        description: Supplied timezone, used explicitly in timestamp parsing.
+      - name: event_timestamp_utc
+        description: Timezone-aware event timestamp; displayed in UTC when the session timezone is UTC.
+        data_tests:
+          - not_null
+      - name: source_file
+        description: Relative source filename; no synthetic row number is introduced.
 
   - name: stg_payment_engine
+    description: >-
+      Typed internal payment-engine snapshot, one row per txn_id.
+      Preserves the original 15 columns and all rows, using strict casts for amounts, rates
+      and timestamps without extra file metadata or derived business fields.
     columns:
       - name: txn_id
         data_tests:
