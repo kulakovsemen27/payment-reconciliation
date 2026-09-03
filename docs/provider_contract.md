@@ -1,6 +1,6 @@
 # Provider Event and Fee Contract
 
-Target interfaces, implemented and tested provider by provider. Names follow the payment engine; provider values remain independent evidence. Detailed reconciliation rules: [methodology](reconciliation_methodology.md).
+Target interfaces, implemented and tested provider by provider. Names follow the payment engine; provider values remain independent evidence.
 
 ## Events — `int_provider_events`
 

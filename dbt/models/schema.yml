@@ -207,8 +207,6 @@ models:
       - name: currency_conversion_rate
         description: Reported merchant-currency units per buyer-currency unit, not recomputed.
         data_tests: [not_null]
-      - name: time_zone
-        description: America/Los_Angeles, explicitly stated in both report headers.
       - name: event_timestamp_utc
         data_tests: [not_null]
 

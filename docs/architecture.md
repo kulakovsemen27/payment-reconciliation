@@ -15,7 +15,7 @@ CSV snapshots → raw → staging → intermediate → marts → CSV reports
 | Layer | Responsibility |
 |---|---|
 | `raw` | Load immutable CSV snapshots as text. Preserve rows and non-empty values; empty fields become `NULL`. |
-| `staging` | Remove confirmed provider source copies, then parse types, dates and units without cross-source joins. Engine keeps its original 15 columns; providers retain filenames and original timestamp text.  |
+| `staging` | Deduplicate and parse types, dates and units without cross-source joins. Engine keeps its original 15 columns; providers retain filenames and original timestamp text. |
 | `intermediate` | Normalize events, resolve lifecycle/version semantics, select FX, match engine/provider events and calculate expected fees. |
 | `marts` | Produce reconciliation detail, provider-by-cause summaries, fee variances, source adjustments and unexplained exceptions. |
 
@@ -29,13 +29,11 @@ Fields, types, nullability and identity rules: [provider_contract.md](provider_c
 
 ## Core Rules
 
-- Keep all raw records. Staging removes confirmed copies using source identity and payload equality before casting; raw counts equal staging counts plus excluded copies. No synthetic file-row numbering. Conflicts and ambiguous identities remain visible for intermediate processing.
+- Keep all raw records; deduplication takes place in staging.
 - Establish identity before comparing amounts or statuses. Accept only unambiguous one-to-one matches; do not force a match to eliminate a residual.
 - Use UTC and fixed-precision decimals. Keep reported amounts separate from independent FX calculations; apply rounding only under an explicit rule. Match across the full extract before deriving June scope.
 - Report principal discrepancies, source-copy corrections and fee variances separately. A duplicated export record is not proof of duplicated money.
 - Check row accounting, keys, FX coverage, join cardinality and summary-to-detail totals. Expected source anomalies are findings; unexplained data loss or broken financial controls block final outputs.
-
-Provider-specific parsing, matching, cutoff and fee rules: [reconciliation_methodology.md](reconciliation_methodology.md).
 
 ## Project and Execution
 
