@@ -212,6 +212,23 @@ models:
       - name: event_timestamp_utc
         data_tests: [not_null]
 
+  - name: fx_rates
+    description: Exchange-rate feed snapshot as text;
+
+  - name: stg_fx_rates
+    description: Typed exchange-rate versions, keyed by rate_date, currency and published_at. Equal rows deduplicated after casting, at DECIMAL(18,10) precision; conflicting rates retained for the key test. Version selection is downstream.
+    columns:
+      - name: rate_date
+        data_tests: [not_null]
+      - name: currency
+        data_tests: [not_null]
+      - name: usd_rate
+        description: USD per one currency unit, as DECIMAL(18,10).
+        data_tests: [not_null]
+      - name: published_at
+        description: Publication timestamp of this rate version, including timezone.
+        data_tests: [not_null]
+
   - name: stg_payment_engine
     description: >-
       Typed internal payment-engine snapshot, one row per txn_id.
