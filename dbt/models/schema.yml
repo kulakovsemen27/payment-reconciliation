@@ -1,0 +1,16 @@
+version: 2
+
+models:
+  - name: payment_engine_log
+    columns:
+      - name: txn_id
+        data_tests:
+          - not_null
+          - unique
+
+  - name: stg_payment_engine
+    columns:
+      - name: txn_id
+        data_tests:
+          - not_null
+          - unique
