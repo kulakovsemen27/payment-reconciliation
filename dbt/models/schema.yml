@@ -241,6 +241,29 @@ models:
       - name: fixed_fee_currency
         description: May be NULL when the fixed fee is zero; no currency is inferred.
 
+  - name: int_paypal_us_events
+    description: >-
+      One PayPal US operation per transaction ID, mapped to the provider-event contract.
+      Completed payments and refunded operations are settled financial events; denied
+      payments are declined non-financial attempts. No June filter, engine join or fee extraction.
+    columns:
+      - name: provider_event_id
+        description: paypal_us prefix plus transaction_id; this export represents one US account. Conflicting IDs fail rather than being arbitrarily resolved.
+        data_tests: [not_null, unique]
+      - name: provider_account
+        description: NULL because no account identifier is supplied; paypal_us scopes event identity.
+      - name: order_id
+        description: Source Invoice ID; agrees with engine order_id for matching references in the supplied data.
+      - name: amount_local_signed
+        description: Signed Gross before fees, including attempted amounts for denied payments.
+      - name: amount_usd_reported
+        description: Gross for USD rows only; never Net or an inferred FX conversion.
+      - name: fx_rate_reported
+        description: NULL because the export contains no FX quote.
+      - name: is_financial_event
+        description: True for completed payments/refunds, false for denied payments. Unsupported type/status combinations remain NULL and fail this check.
+        data_tests: [not_null]
+
   - name: stg_payment_engine
     description: >-
       Typed internal payment-engine snapshot, one row per txn_id.
