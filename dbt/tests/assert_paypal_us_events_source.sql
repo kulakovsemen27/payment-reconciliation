@@ -1,8 +1,8 @@
 -- No event is filtered or deduplicated again; principal must retain source values.
-select coalesce(e.provider_event_id, 'paypal_us:' || s.transaction_id) as provider_event_id
+select coalesce(e.provider_event_id, s.transaction_id) as provider_event_id
 from {{ ref('stg_paypal_us') }} as s
 full outer join {{ ref('int_paypal_us_events') }} as e
-    on e.provider_event_id = 'paypal_us:' || s.transaction_id
+    on e.psp = 'paypal_us' and e.provider_event_id = s.transaction_id
 where s.transaction_id is null
     or e.provider_event_id is null
     or e.psp_reference is distinct from s.transaction_id

@@ -248,8 +248,10 @@ models:
       payments are declined non-financial attempts. No June filter, engine join or fee extraction.
     columns:
       - name: provider_event_id
-        description: paypal_us prefix plus transaction_id; this export represents one US account. Conflicting IDs fail rather than being arbitrarily resolved.
-        data_tests: [not_null, unique]
+        description: Original transaction_id, without a provider prefix; unique together with psp. Conflicting keys fail rather than being arbitrarily resolved.
+        data_tests: [not_null]
+      - name: psp
+        data_tests: [not_null]
       - name: provider_account
         description: NULL because no account identifier is supplied; paypal_us scopes event identity.
       - name: order_id
@@ -262,6 +264,13 @@ models:
         description: NULL because the export contains no FX quote.
       - name: is_financial_event
         description: True for completed payments/refunds, false for denied payments. Unsupported type/status combinations remain NULL and fail this check.
+        data_tests: [not_null]
+
+  - name: int_paypal_us_fees
+    description: One reported total fee per PayPal US staged operation, including zero fees; linked to events by (psp, provider_event_id). No expected-fee calculation.
+    columns:
+      - name: fee_amount
+        description: Negated source Fee as DECIMAL(20,8); positive expense, negative fee return. NULL is never replaced with zero.
         data_tests: [not_null]
 
   - name: stg_payment_engine

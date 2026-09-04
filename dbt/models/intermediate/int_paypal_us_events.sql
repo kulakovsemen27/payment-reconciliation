@@ -1,7 +1,7 @@
 {{ config(materialized='table', schema='intermediate') }}
 
 select
-    'paypal_us:' || transaction_id as provider_event_id,
+    transaction_id as provider_event_id,
     'paypal_us' as psp,
     cast(null as varchar) as provider_account,
     source_file,

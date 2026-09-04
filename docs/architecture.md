@@ -21,8 +21,8 @@ CSV snapshots → raw → staging → intermediate → marts → CSV reports
 
 ## Shared Interfaces
 
-- `int_provider_events`: one resolved provider event, identified by `provider_event_id`. Provider models share a column contract and combine through `UNION ALL`.
-- `int_provider_fees`: reported fee components linked to events. Aggregate components before joining to principal totals to avoid multiplying payment amounts.
+- `int_provider_events`: one resolved provider event, identified by `(psp, provider_event_id)`. Provider models share a column contract and combine through `UNION ALL`.
+- `int_provider_fees`: reported fee components linked to events by `(psp, provider_event_id)`. Aggregate components before joining to principal totals to avoid multiplying payment amounts.
 - Engine events remain separate and use `txn_id`; matching connects the two sides.
 
 Fields, types, nullability and identity rules: [provider_contract.md](provider_contract.md).

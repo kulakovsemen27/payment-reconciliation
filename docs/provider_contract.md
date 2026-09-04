@@ -8,7 +8,7 @@ One resolved operation or lifecycle event after confirmed-copy removal. Provider
 
 | Column | Type | Nullable | Meaning |
 |---|---|---|---|
-| `provider_event_id` | `VARCHAR` | No | Stable event identity including provider/account context |
+| `provider_event_id` | `VARCHAR` | No | Stable event ID within `psp`, without a provider prefix |
 | `psp` | `VARCHAR` | No | `paypal_us`, `paypal_eu`, `adyen`, `dlocal`, `google_play` |
 | `provider_account` | `VARCHAR` | Yes | Source account, or a documented file-to-account mapping |
 | `source_file` | `VARCHAR` | No | Repository-relative input filename |
@@ -32,18 +32,18 @@ One resolved operation or lifecycle event after confirmed-copy removal. Provider
 - Sales are positive; refunds/chargebacks negative; reversals follow the reversed operation's direction. Non-financial attempts may retain amounts but do not contribute to financial totals. Diagnose unknown states; never force them into settled/declined.
 - Missing values are `NULL`, not invented IDs, zero amounts or non-USD rates of one. Missing data needed to value/scope a financial event blocks a complete result.
 - USD-denominated principal can populate `amount_usd_reported` directly. Otherwise use only the supplied USD equivalent, never net-after-fee amounts or our FX calculation. Shared FX processing adds `fx_rate_selected` and `amount_usd_normalized` (`DECIMAL(38,18)`); no premature cent rounding.
-- Derive `provider_event_id` from a verified, possibly composite natural key plus provider/account context. If hashing, serialize unambiguously. Exclude filenames, row positions and run-dependent values. Distinct refunds/transitions must remain distinct.
+- The event key is `(psp, provider_event_id)`; uniqueness checks and event joins use both fields. Use the source event ID when unique within `psp`; otherwise derive it from a verified natural key, including account context if needed. Exclude filenames and row positions. Distinct refunds/transitions remain distinct.
 - Keep all raw copies; remove confirmed same-event, equal-payload copies in provider staging before casting. Retain key, copy counts and monetary corrections. Across files, removal still requires verified identity and a deterministic filename representative with per-file counts. PayPal US currently removes exact copies within its single export. No `source_row_id`.
 - Conflicting payloads or ambiguous identities remain in exception outputs and source controls, not arbitrary first/latest selections. Google Play's identical descriptive values alone do not prove duplication. Cross-system amount/status differences do not invalidate a reliable identity link.
 - Preserve original timestamps in raw/staging; derive June scope after buffered matching. Engine stays separate, using `txn_id` without provider IDs or file metadata in raw/staging.
 
 ## Fees — `int_provider_fees`
 
-One reported fee component associated with an event; no principal amounts here.
+One reported fee component associated with an event through `(psp, provider_event_id)`; no principal amounts here. PayPal US retains one total-fee record per staged operation, including zero fees.
 
 | Column | Type | Nullable | Meaning |
 |---|---|---|---|
-| `provider_event_id` | `VARCHAR` | Yes | Event link; `NULL` if unresolved |
+| `provider_event_id` | `VARCHAR` | Yes | Event ID, joined together with `psp`; `NULL` if unresolved |
 | `psp` | `VARCHAR` | No | Provider, including for unlinked fees |
 | `provider_account` | `VARCHAR` | Yes | Account for contract selection |
 | `fee_type` | `VARCHAR` | No | Component, e.g. `commission`, `markup`, `total` |
@@ -58,4 +58,4 @@ One reported fee component associated with an event; no principal amounts here.
 
 ## Required Controls
 
-Test resolved event-ID uniqueness, field/state/sign validity, row and amount accounting, fee-link integrity, join cardinality and repeatability. Include exceptions and copy corrections in controls. Source rows, events and fee components have different grains; their counts are not interchangeable.
+Test `(psp, provider_event_id)` uniqueness, field/state/sign validity, row and amount accounting, fee-link integrity, join cardinality and repeatability. Include exceptions and copy corrections in controls. Source rows, events and fee components have different grains; their counts are not interchangeable.
