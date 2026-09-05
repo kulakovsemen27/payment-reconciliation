@@ -18,8 +18,9 @@ contracted as (
         e.provider_event_id,
         e.provider_account,
         e.event_timestamp_utc,
-        e.currency as fee_currency,
+        e.currency as principal_currency,
         e.amount_local_signed as principal_amount_local,
+        e.amount_usd_normalized as principal_amount_usd,
         e.fx_rate_selected,
         schedule.valid_from as contract_valid_from,
         schedule.percent_fee,
@@ -46,12 +47,25 @@ contracted as (
 valued as (
     select
         c.*,
+        r.currency as fee_currency,
         r.reported_fee_local,
+        case
+            when r.currency = c.principal_currency then abs(c.principal_amount_local)
+            when r.currency = 'USD' then abs(c.principal_amount_usd)
+        end as principal_amount_fee_currency,
+        case
+            when r.currency = c.principal_currency then c.fx_rate_selected
+            when r.currency = 'USD' then cast(1 as decimal(18, 10))
+        end as fee_fx_rate,
         cast(case
             when c.fixed_fee = 0
-                or c.fixed_fee_currency = c.fee_currency
+                or c.fixed_fee_currency = r.currency
             then round(
-                abs(c.principal_amount_local) * c.percent_fee / 100 + c.fixed_fee,
+                case
+                    when r.currency = c.principal_currency
+                        then abs(c.principal_amount_local)
+                    when r.currency = 'USD' then abs(c.principal_amount_usd)
+                end * c.percent_fee / 100 + c.fixed_fee,
                 2
             )
         end as decimal(20, 8)) as expected_fee_local
@@ -60,16 +74,15 @@ valued as (
         on c.psp = r.psp
         and c.provider_event_id = r.provider_event_id
         and c.provider_account = r.provider_account
-        and c.fee_currency = r.currency
 ),
 
 measured as (
     select
         *,
         reported_fee_local - expected_fee_local as signed_fee_variance_local,
-        cast(round(reported_fee_local * fx_rate_selected, 2)
+        cast(round(reported_fee_local * fee_fx_rate, 2)
             as decimal(38, 18)) as reported_fee_usd,
-        cast(round(expected_fee_local * fx_rate_selected, 2)
+        cast(round(expected_fee_local * fee_fx_rate, 2)
             as decimal(38, 18)) as expected_fee_usd
     from valued
 )

@@ -347,6 +347,14 @@ models:
       Unambiguous Google Play pairs matched by completion timestamp, operation,
       product, country and buyer currency. Amount remains a measured attribute.
 
+  - name: int_google_play_fees
+    description: Google fee rows linked one-to-one to charge events and expressed as positive USD expense.
+    columns:
+      - name: provider_event_id
+        data_tests: [not_null]
+      - name: fee_amount
+        data_tests: [not_null]
+
   - name: int_provider_matches
     description: Union of accepted provider-specific event matches.
     columns:
@@ -404,7 +412,8 @@ models:
   - name: mart_fee_reconciliation_detail
     description: >-
       Event-level comparison of reported provider fees with the latest applicable
-      account contract. Positive variance means the provider charged more than expected.
+      account contract. Principal is valued in the reported fee currency, including
+      USD fees on non-USD purchases. Positive variance means the provider charged more than expected.
     columns:
       - name: reported_fee_local
         data_tests: [not_null]

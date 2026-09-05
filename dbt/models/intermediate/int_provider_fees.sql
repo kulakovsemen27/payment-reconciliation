@@ -7,3 +7,5 @@ union all
 select * from {{ ref('int_dlocal_fees') }}
 union all
 select * from {{ ref('int_adyen_fees') }}
+union all
+select * from {{ ref('int_google_play_fees') }}
