@@ -148,6 +148,11 @@ select
         when signed_usd_impact <> 0 and amount_local_difference = 0
             and engine_fx_rate is distinct from
                 coalesce(provider_fx_rate_reported, provider_fx_rate) then 'fx_difference'
+        when signed_usd_impact <> 0 and abs(signed_usd_impact) <= 0.01
+            and amount_local_difference = 0
+            and engine_fx_rate is not distinct from
+                coalesce(provider_fx_rate_reported, provider_fx_rate)
+            then 'rounding_difference'
         when signed_usd_impact <> 0 then 'amount_difference'
         else 'matched'
     end as cause
