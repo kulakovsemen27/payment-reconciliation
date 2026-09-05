@@ -33,7 +33,7 @@ One resolved operation or lifecycle event after confirmed-copy removal. Provider
 - Missing values are `NULL`, not invented IDs, zero amounts or non-USD rates of one. Missing data needed to value/scope a financial event blocks a complete result.
 - USD-denominated principal can populate `amount_usd_reported` directly. Otherwise use only the supplied USD equivalent, never net-after-fee amounts or our FX calculation. Shared FX processing adds `fx_rate_selected` and `amount_usd_normalized` (`DECIMAL(38,18)`); no premature cent rounding.
 - The event key is `(psp, provider_event_id)`; uniqueness checks and event joins use both fields. Use the source event ID when unique within `psp`; otherwise derive it from a verified natural key, including account context if needed. Exclude filenames and row positions. Distinct refunds/transitions remain distinct.
-- Keep all raw copies; remove confirmed same-event, equal-payload copies in provider staging before casting. Retain key, copy counts and monetary corrections. Across files, removal still requires verified identity and a deterministic filename representative with per-file counts. PayPal US currently removes exact copies within its single export. No `source_row_id`.
+- Keep all raw copies; remove confirmed same-event, equal-payload copies in provider staging before casting. Control raw-to-staging row counts and report duplicates as DQ findings without assigning financial impact. Across files, removal still requires verified identity and idempotent ingestion. PayPal US currently removes exact copies within its single export. No `source_row_id`.
 - Conflicting payloads or ambiguous identities remain in exception outputs and source controls, not arbitrary first/latest selections. Google Play's identical descriptive values alone do not prove duplication. Cross-system amount/status differences do not invalidate a reliable identity link.
 - Preserve original timestamps in raw/staging; derive June scope after buffered matching. Engine stays separate, using `txn_id` without provider IDs or file metadata in raw/staging.
 
@@ -58,4 +58,4 @@ One reported fee component associated with an event through `(psp, provider_even
 
 ## Required Controls
 
-Test `(psp, provider_event_id)` uniqueness, field/state/sign validity, row and amount accounting, fee-link integrity, join cardinality and repeatability. Include exceptions and copy corrections in controls. Source rows, events and fee components have different grains; their counts are not interchangeable.
+Test `(psp, provider_event_id)` uniqueness, field/state/sign validity, raw-to-staging row accounting, fee-link integrity, join cardinality and repeatability. Source rows, canonical events and fee components have different grains; their counts are not interchangeable.

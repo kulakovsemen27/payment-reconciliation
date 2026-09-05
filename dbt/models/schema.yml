@@ -273,36 +273,41 @@ models:
         description: Negated source Fee as DECIMAL(20,8); positive expense, negative fee return. NULL is never replaced with zero.
         data_tests: [not_null]
 
-  - name: int_paypal_us_matches
+  - name: int_payment_engine_events
     description: >-
-      One reference-matched pair or unmatched operation. Matches use psp and psp_reference
-      only, across the full extract; no amount/status/date conditions or fee joins.
-      Coverage tests require each input operation exactly once; ambiguous references fail
-      instead of choosing an arbitrary match.
+      Shared engine events with signed principal, financial relevance, and separate event and
+      reporting-scope timestamps. No provider matching or report-month filter.
     columns:
-      - name: engine_txn_id
-        description: Internal transaction key; NULL for provider-only operations.
-      - name: provider_event_id
-        description: Provider event key together with psp; NULL for engine-only operations.
-      - name: match_status
-        description: matched means identity-linked, not financially reconciled; otherwise engine_only or provider_only.
+      - name: is_financial_event
+        data_tests: [not_null]
 
-  - name: int_paypal_us_comparison
+  - name: int_provider_events
     description: >-
-      One row per matched pair or unmatched operation, retaining both sides' values.
-      Engine refund/chargeback magnitudes are negated before comparison. No fee joins,
-      June filter or root-cause classification. Differences are diagnostics, not failures.
+      Union of provider adapters implementing the shared event contract. Currently contains
+      PayPal US; new providers are added with UNION ALL after their adapter is validated.
+
+  - name: mart_reconciliation_detail
+    description: >-
+      Shared monthly principal reconciliation. It identity-matches every implemented provider
+      to engine events, measures both sides, and assigns one cause per row. Fees remain a
+      separate reconciliation scope; ingestion duplicates remain a data-quality concern.
     columns:
-      - name: amount_local_difference
-        description: Provider minus engine signed amount, only for equal currencies; otherwise NULL.
-      - name: amount_usd_difference
-        description: Difference in reported signed USD amounts, not recognized financial impact. Pending/declined attempts retain their amounts; missing values remain NULL.
-      - name: engine_event_timestamp_utc
-        description: Captured time for settled operations, created time for declined attempts; pending operations have no completion timestamp here.
-      - name: event_time_difference_seconds
-        description: Provider minus engine time in seconds; processing delays are not automatically discrepancies.
-      - name: event_date_differs
-        description: Comparison of UTC calendar dates; NULL if either timestamp is missing. No cutoff classification yet.
+      - name: engine_in_period
+        data_tests: [not_null]
+      - name: provider_in_period
+        data_tests: [not_null]
+      - name: engine_is_financial_event
+        data_tests: [not_null]
+      - name: provider_is_financial_event
+        data_tests: [not_null]
+      - name: signed_usd_impact
+        data_tests: [not_null]
+
+  - name: mart_reconciliation_summary
+    description: >-
+      All-provider principal reconciliation by report month, provider and cause. Includes an
+      aggregated matched row, both sides' USD totals, signed and absolute impact. Percentage
+      shares use total absolute discrepancy for the month.
 
   - name: stg_payment_engine
     description: >-
