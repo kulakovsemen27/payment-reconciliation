@@ -1,0 +1,8 @@
+report_month,psp,provider_account,fee_currency,cause,event_count,reported_fee_local,expected_fee_local,signed_fee_variance_local,reported_fee_usd,expected_fee_usd,signed_fee_variance_usd,absolute_fee_variance_usd
+2026-06-01,adyen,LumoAPP_US,USD,fee_difference,1,1.10,0.62,0.48,1.10,0.62,0.48,0.48
+2026-06-01,adyen,LumoAPP_US,USD,matched,305,155.90,155.90,0.00,155.90,155.90,0.00,0.00
+2026-06-01,adyen,LumoECOM_EU,EUR,fee_difference,1,2.64,1.50,1.14,2.87,1.63,1.24,1.24
+2026-06-01,adyen,LumoECOM_EU,EUR,matched,1006,481.34,481.34,0.00,522.51,522.51,0.00,0.00
+2026-06-01,adyen,LumoECOM_EU,GBP,matched,263,114.01,114.01,0.00,147.04,147.04,0.00,0.00
+2026-06-01,google_play,LumoPlayMain,USD,fee_difference,6,18.00,9.00,9.00,18.00,9.00,9.00,9.00
+2026-06-01,google_play,LumoPlayMain,USD,matched,760,2231.20,2231.20,0.00,2231.20,2231.20,0.00,0.00
