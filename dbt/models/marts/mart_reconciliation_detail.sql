@@ -6,15 +6,58 @@ with engine as (
     where psp in (select distinct psp from {{ ref('int_provider_events') }})
 ),
 
+provider as (
+    select * from {{ ref('int_provider_events') }}
+),
+
+pairs as (
+    select
+        psp,
+        engine_txn_id,
+        provider_event_id,
+        match_method,
+        'matched' as match_status
+    from {{ ref('int_provider_matches') }}
+
+    union all
+
+    select
+        e.psp,
+        e.engine_txn_id,
+        cast(null as varchar) as provider_event_id,
+        cast(null as varchar) as match_method,
+        'engine_only' as match_status
+    from engine as e
+    where not exists (
+        select 1
+        from {{ ref('int_provider_matches') }} as m
+        where m.psp = e.psp and m.engine_txn_id = e.engine_txn_id
+    )
+
+    union all
+
+    select
+        p.psp,
+        cast(null as varchar) as engine_txn_id,
+        p.provider_event_id,
+        cast(null as varchar) as match_method,
+        'provider_only' as match_status
+    from provider as p
+    where not exists (
+        select 1
+        from {{ ref('int_provider_matches') }} as m
+        where m.psp = p.psp and m.provider_event_id = p.provider_event_id
+    )
+),
+
 matched as (
     select
         cast('{{ var("report_month") }}' as date) as report_month,
-        coalesce(e.psp, p.psp) as psp,
+        pairs.psp,
         e.engine_txn_id,
         p.provider_event_id,
-        case when e.engine_txn_id is null then 'provider_only'
-            when p.provider_event_id is null then 'engine_only'
-            else 'matched' end as match_status,
+        pairs.match_method,
+        pairs.match_status,
         e.operation_type as engine_operation_type,
         p.operation_type as provider_operation_type,
         e.status as engine_status,
@@ -43,9 +86,11 @@ matched as (
         case when p.provider_event_id is null then false else
             date_trunc('month', p.event_timestamp_utc at time zone 'UTC')::date
                 = cast('{{ var("report_month") }}' as date) end as provider_in_period
-    from engine as e
-    full outer join {{ ref('int_provider_events') }} as p
-        on e.psp = p.psp and e.psp_reference = p.psp_reference
+    from pairs
+    left join engine as e
+        on pairs.psp = e.psp and pairs.engine_txn_id = e.engine_txn_id
+    left join provider as p
+        on pairs.psp = p.psp and pairs.provider_event_id = p.provider_event_id
 ),
 
 measured as (

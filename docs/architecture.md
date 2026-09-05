@@ -23,6 +23,7 @@ CSV snapshots → raw → staging → intermediate → marts → CSV reports
 
 - `int_payment_engine_events`: shared signed engine events with financial relevance and reporting timestamps.
 - `int_provider_events`: one resolved provider event, identified by `(psp, provider_event_id)`. Provider adapters share a column contract and combine through `UNION ALL`.
+- `int_provider_matches`: accepted engine/provider event pairs from provider-specific matching models; each pair records its match method.
 - `int_provider_fees`: reported fee components linked to events by `(psp, provider_event_id)`. Aggregate components before joining to principal totals to avoid multiplying payment amounts.
 - `mart_reconciliation_detail` applies matching, month scope and cause classification once for every implemented provider; `mart_reconciliation_summary` aggregates all rows, including matched coverage and both sides' USD totals.
 

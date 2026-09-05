@@ -301,6 +301,25 @@ models:
       - name: fee_amount
         data_tests: [not_null]
 
+  - name: int_paypal_us_matches
+    description: PayPal US engine/provider pairs matched by PSP reference.
+
+  - name: int_paypal_eu_matches
+    description: PayPal EU engine/provider pairs matched by PSP reference.
+
+  - name: int_dlocal_matches
+    description: dLocal engine/provider pairs matched by PSP reference.
+
+  - name: int_provider_matches
+    description: Union of accepted provider-specific event matches.
+    columns:
+      - name: engine_txn_id
+        data_tests: [not_null]
+      - name: provider_event_id
+        data_tests: [not_null]
+      - name: match_method
+        data_tests: [not_null]
+
   - name: int_provider_fees
     description: Union of validated provider fee adapters at event and fee-component grain.
 
