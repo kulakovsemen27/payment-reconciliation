@@ -138,6 +138,8 @@ select
             and provider_operation_type = 'REFUND' then 'refund_missing_in_engine'
         when match_status = 'provider_only'
             and provider_operation_type = 'REVERSAL' then 'reversal_missing_in_engine'
+        when match_status = 'provider_only'
+            and provider_operation_type = 'CHARGEBACK' then 'chargeback_missing_in_engine'
         when match_status = 'provider_only' then 'provider_only'
         when operation_type_differs or currency_differs then 'unexplained'
         when status_differs then 'status_lifecycle_difference'
