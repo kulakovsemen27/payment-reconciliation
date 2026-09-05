@@ -7,6 +7,8 @@ select
     order_id,
     operation_type,
     status,
+    country,
+    sku,
     currency,
     fx_date_applied,
     fx_rate_applied,

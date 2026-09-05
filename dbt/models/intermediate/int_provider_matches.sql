@@ -7,3 +7,5 @@ union all
 select * from {{ ref('int_dlocal_matches') }}
 union all
 select * from {{ ref('int_adyen_matches') }}
+union all
+select * from {{ ref('int_google_play_matches') }}

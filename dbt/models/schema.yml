@@ -331,6 +331,22 @@ models:
       - name: fee_amount
         data_tests: [not_null]
 
+  - name: int_google_play_events
+    description: >-
+      Google Play charges and refunds mapped to the shared event contract. The event
+      ID is derived from the timestamp, operation, product, country and currency.
+      Merchant USD is retained separately from the buyer-currency principal.
+    columns:
+      - name: provider_event_id
+        data_tests: [not_null]
+      - name: is_financial_event
+        data_tests: [not_null]
+
+  - name: int_google_play_matches
+    description: >-
+      Unambiguous Google Play pairs matched by completion timestamp, operation,
+      product, country and buyer currency. Amount remains a measured attribute.
+
   - name: int_provider_matches
     description: Union of accepted provider-specific event matches.
     columns:
@@ -350,7 +366,8 @@ models:
   - name: int_payment_engine_events
     description: >-
       Shared engine events with signed principal, financial relevance, and separate event and
-      reporting-scope timestamps. No provider matching or report-month filter.
+      reporting-scope timestamps. Country and SKU remain available for providers without
+      transaction references. No provider matching or report-month filter.
     columns:
       - name: is_financial_event
         data_tests: [not_null]

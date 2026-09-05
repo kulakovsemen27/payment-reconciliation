@@ -8,6 +8,8 @@ with events as (
     select * from {{ ref('int_dlocal_events') }}
     union all
     select * from {{ ref('int_adyen_events') }}
+    union all
+    select * from {{ ref('int_google_play_events') }}
 ),
 
 normalized as (

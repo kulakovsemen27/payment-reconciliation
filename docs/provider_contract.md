@@ -40,7 +40,7 @@ One resolved operation or lifecycle event after confirmed-copy removal. Provider
 - Conflicting payloads or ambiguous identities remain in exception outputs and source controls, not arbitrary first/latest selections. Google Play's identical descriptive values alone do not prove duplication. Cross-system amount/status differences do not invalidate a reliable identity link.
 - Preserve original timestamps in raw/staging; derive June scope after buffered matching. Engine stays separate, using `txn_id` without provider IDs or file metadata in raw/staging.
 
-Provider-specific match models return accepted `(psp, engine_txn_id, provider_event_id, match_method)` pairs. PayPal and dLocal use PSP references. Adyen sales use PSP references; refunds and chargebacks use order plus operation type. Matching ambiguity fails validation instead of being resolved arbitrarily.
+Provider-specific match models return accepted `(psp, engine_txn_id, provider_event_id, match_method)` pairs. PayPal and dLocal use PSP references. Adyen sales use PSP references; refunds and chargebacks use order plus operation type. Google Play uses completion timestamp, operation, product, country and buyer currency; amount remains available for discrepancy measurement. Only one-to-one candidates are accepted; ambiguity remains unmatched.
 
 ## Fees — `int_provider_fees`
 
