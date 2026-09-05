@@ -24,6 +24,7 @@ matched as (
         e.fx_date_applied as engine_fx_date,
         p.fx_date_selected as provider_fx_date,
         e.fx_rate_applied as engine_fx_rate,
+        p.fx_rate_reported as provider_fx_rate_reported,
         p.fx_rate_selected as provider_fx_rate,
         e.amount_local_signed as engine_amount_local_signed,
         p.amount_local_signed as provider_amount_local_signed,
@@ -98,7 +99,8 @@ select
         when engine_is_financial_event and provider_is_financial_event
             and engine_in_period <> provider_in_period then 'cutoff_timing'
         when signed_usd_impact <> 0 and amount_local_difference = 0
-            and engine_fx_rate is distinct from provider_fx_rate then 'fx_difference'
+            and engine_fx_rate is distinct from
+                coalesce(provider_fx_rate_reported, provider_fx_rate) then 'fx_difference'
         when signed_usd_impact <> 0 then 'amount_difference'
         else 'matched'
     end as cause

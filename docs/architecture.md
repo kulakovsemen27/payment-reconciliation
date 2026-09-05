@@ -35,7 +35,7 @@ Fields, types, nullability and identity rules: [provider_contract.md](provider_c
 - Use UTC and fixed-precision decimals. Keep reported amounts separate from independent FX calculations. Use the latest revision for the most recent rate date not after the event, and round calculated USD to cents only at event-level recognition. Match across the full extract before deriving June scope.
 - Treat exact source copies as ingestion DQ, not financial discrepancies. Control raw-to-staging row counts and mention relevant findings in the memo; keep them out of CFO monetary totals.
 - `report_month` is the required first day of the reporting month, supplied for each run. Engine events use UTC completion time for financial recognition; pending/declined attempts contribute zero and use creation time for audit scope. Keep a matched pair if either side belongs to the month.
-- Cause precedence is shared: invalid financial inputs → missing counterpart → incompatible operation/currency → status → month cutoff → amount → matched. Summary percentages use absolute principal impact across providers for the month; fees remain separate.
+- Cause precedence is shared: invalid financial inputs → missing counterpart → incompatible operation/currency → status → month cutoff → FX → amount → matched. Summary percentages use absolute principal impact across providers for the month; fees remain separate.
 - Check row accounting, keys, FX coverage, join cardinality and summary-to-detail totals. Expected source anomalies are findings; unexplained data loss or broken financial controls block final outputs.
 
 ## Project and Execution

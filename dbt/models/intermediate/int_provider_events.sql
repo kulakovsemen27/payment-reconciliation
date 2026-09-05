@@ -4,6 +4,8 @@ with events as (
     select * from {{ ref('int_paypal_us_events') }}
     union all
     select * from {{ ref('int_paypal_eu_events') }}
+    union all
+    select * from {{ ref('int_dlocal_events') }}
 ),
 
 normalized as (
