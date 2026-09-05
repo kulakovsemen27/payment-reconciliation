@@ -59,7 +59,7 @@ One reported fee component associated with an event through `(psp, provider_even
 - Sources: PayPal `Fee`; Adyen `Commission`/`Markup`; Google Play fee rows linked to charges; dLocal `fee_usd` in USD.
 - Never add a total alongside its components or interpret a missing fee as zero. Equal amounts alone are not duplicates; multiple legitimate entries require explicit aggregation or retained detail, not an assumed unique event/component key.
 - Preserve unlinked fees with source evidence; missing currency/amount is an exception. Aggregate components by event in a comparable currency before joining principal; never multiply payments or sum mixed currencies.
-- Calculate expected fees and variance downstream using the account/date contract, relevant components and rounding rules.
+- Calculate expected fees for settled sales from the latest account contract effective on the event date. Round expected fees to fee-currency cents, convert both sides to event-level USD cents, and define variance as reported minus expected.
 
 ## Required Controls
 

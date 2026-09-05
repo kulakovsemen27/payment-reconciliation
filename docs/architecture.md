@@ -26,6 +26,7 @@ CSV snapshots → raw → staging → intermediate → marts → CSV reports
 - `int_provider_matches`: accepted engine/provider event pairs from provider-specific matching models; each pair records its match method.
 - `int_provider_fees`: reported fee components linked to events by `(psp, provider_event_id)`. Aggregate components before joining to principal totals to avoid multiplying payment amounts.
 - `mart_reconciliation_detail` applies matching, month scope and cause classification once for every implemented provider; `mart_reconciliation_summary` aggregates all rows, including matched coverage and both sides' USD totals.
+- `mart_fee_reconciliation_detail` compares aggregated reported components with the latest applicable account tariff; `mart_fee_reconciliation_summary` preserves local currencies and reports USD variance.
 
 Fields, types, nullability and identity rules: [provider_contract.md](provider_contract.md).
 

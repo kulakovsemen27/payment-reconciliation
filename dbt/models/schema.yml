@@ -325,6 +325,12 @@ models:
       Adyen sales matched by PSP reference; refunds and chargebacks matched by order
       and operation type because their engine modification references differ.
 
+  - name: int_adyen_fees
+    description: Reported Adyen commission and markup components for settled sales.
+    columns:
+      - name: fee_amount
+        data_tests: [not_null]
+
   - name: int_provider_matches
     description: Union of accepted provider-specific event matches.
     columns:
@@ -377,6 +383,21 @@ models:
       All-provider principal reconciliation by report month, provider and cause. Includes an
       aggregated matched row, both sides' USD totals, signed and absolute impact. Percentage
       shares use total absolute discrepancy for the month.
+
+  - name: mart_fee_reconciliation_detail
+    description: >-
+      Event-level comparison of reported provider fees with the latest applicable
+      account contract. Positive variance means the provider charged more than expected.
+    columns:
+      - name: reported_fee_local
+        data_tests: [not_null]
+      - name: expected_fee_local
+        data_tests: [not_null]
+      - name: signed_fee_variance_usd
+        data_tests: [not_null]
+
+  - name: mart_fee_reconciliation_summary
+    description: Fee reconciliation totals by month, provider, account, currency and cause.
 
   - name: stg_payment_engine
     description: >-
