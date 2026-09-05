@@ -76,8 +76,8 @@ models:
   - name: stg_paypal_eu
     description: >-
       One distinct PayPal EU source record, deduplicated before casting.
-      Decimal commas are parsed without cent rounding; dates use DD/MM/YYYY only.
-      Suspected source date errors are investigated during reconciliation, not corrected here.
+      Decimal commas are parsed without cent rounding. Date parsing chooses DD/MM/YYYY or
+      MM/DD/YYYY only when the result falls within the period declared by source_file.
     columns:
       - name: transaction_id
         description: Provider operation reference; differing payloads with the same ID are retained.
@@ -119,7 +119,7 @@ models:
       - name: time_zone
         description: Supplied timezone, used explicitly in parsing.
       - name: event_timestamp_utc
-        description: Timezone-aware timestamp parsed as DD/MM/YYYY; invalid values become NULL, valid but incorrect dates require downstream checks.
+        description: Timezone-aware timestamp resolved against the export period; invalid or out-of-period values become NULL.
         data_tests:
           - not_null
       - name: source_file
@@ -273,6 +273,26 @@ models:
         description: Negated source Fee as DECIMAL(20,8); positive expense, negative fee return. NULL is never replaced with zero.
         data_tests: [not_null]
 
+  - name: int_paypal_eu_events
+    description: >-
+      PayPal EU operations mapped to the shared event contract. Completed payments, refunds
+      and reversals are financial; denied payments are non-financial attempts.
+    columns:
+      - name: is_financial_event
+        data_tests: [not_null]
+
+  - name: int_paypal_eu_fees
+    description: One reported total fee per PayPal EU staged operation, including zero fees.
+    columns:
+      - name: fee_amount
+        data_tests: [not_null]
+
+  - name: int_provider_fees
+    description: Union of validated provider fee adapters at event and fee-component grain.
+
+  - name: int_fx_rates
+    description: One selected rate per date and currency, using the latest published revision.
+
   - name: int_payment_engine_events
     description: >-
       Shared engine events with signed principal, financial relevance, and separate event and
@@ -283,14 +303,15 @@ models:
 
   - name: int_provider_events
     description: >-
-      Union of provider adapters implementing the shared event contract. Currently contains
-      PayPal US; new providers are added with UNION ALL after their adapter is validated.
+      Union of validated provider adapters enriched with the latest available FX rate on or
+      before the UTC event date and a high-precision normalized USD principal amount.
 
   - name: mart_reconciliation_detail
     description: >-
       Shared monthly principal reconciliation. It identity-matches every implemented provider
       to engine events, measures both sides, and assigns one cause per row. Fees remain a
       separate reconciliation scope; ingestion duplicates remain a data-quality concern.
+      Calculated provider USD is rounded to cents at event grain only when recognized.
     columns:
       - name: engine_in_period
         data_tests: [not_null]

@@ -8,6 +8,8 @@ select
     operation_type,
     status,
     currency,
+    fx_date_applied,
+    fx_rate_applied,
     case when operation_type in ('REFUND', 'CHARGEBACK')
         then -amount_local else amount_local end as amount_local_signed,
     cast(case when operation_type in ('REFUND', 'CHARGEBACK')

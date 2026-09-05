@@ -11,11 +11,19 @@ with deduplicated as (
     from {{ ref('paypal_eu_activity') }}
 ),
 
-parsed_dates as (
+date_candidates as (
     select
         *,
-        -- Parse without timezone first to reject invalid calendar dates.
-        try_strptime("Date" || ' ' || "Time", '%d/%m/%Y %H:%M:%S') as local_timestamp
+        try_strptime("Date" || ' ' || "Time", '%d/%m/%Y %H:%M:%S') as dmy_timestamp,
+        try_strptime("Date" || ' ' || "Time", '%m/%d/%Y %H:%M:%S') as mdy_timestamp,
+        try_strptime(
+            regexp_extract(source_file, '_([0-9]{8})_([0-9]{8})[.]csv$', 1),
+            '%Y%m%d'
+        )::date as extract_start,
+        try_strptime(
+            regexp_extract(source_file, '_([0-9]{8})_([0-9]{8})[.]csv$', 2),
+            '%Y%m%d'
+        )::date as extract_end
     from deduplicated
 )
 
@@ -34,8 +42,11 @@ select
     "Time" as time_raw,
     "Time Zone" as time_zone,
     try_strptime(
-        strftime(local_timestamp, '%Y-%m-%d %H:%M:%S') || ' ' || "Time Zone",
+        strftime(case
+            when dmy_timestamp::date between extract_start and extract_end then dmy_timestamp
+            when mdy_timestamp::date between extract_start and extract_end then mdy_timestamp
+        end, '%Y-%m-%d %H:%M:%S') || ' ' || "Time Zone",
         '%Y-%m-%d %H:%M:%S %Z'
     ) as event_timestamp_utc,
     source_file
-from parsed_dates
+from date_candidates

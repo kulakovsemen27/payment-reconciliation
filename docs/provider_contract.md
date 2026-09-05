@@ -26,12 +26,15 @@ One resolved operation or lifecycle event after confirmed-copy removal. Provider
 | `amount_usd_reported` | `DECIMAL(20,8)` | Yes | Signed USD principal reported by the provider |
 | `fx_rate_reported` | `DECIMAL(18,10)` | Yes | Reported rate, normalized to USD per principal-currency unit |
 | `is_financial_event` | `BOOLEAN` | Yes | Contributes to principal totals; `NULL` means unresolved |
+| `fx_rate_selected` | `DECIMAL(18,10)` | Yes | Latest revision for the most recent rate date not after the event; 1 for USD |
+| `fx_date_selected` | `DATE` | Yes | Reference-rate date; NULL for USD events |
+| `amount_usd_normalized` | `DECIMAL(38,18)` | Yes | Reported USD amount or high-precision conversion using the selected rate |
 
 ### Values and Identity
 
 - Sales are positive; refunds/chargebacks negative; reversals follow the reversed operation's direction. Non-financial attempts may retain amounts but do not contribute to financial totals. Diagnose unknown states; never force them into settled/declined.
 - Missing values are `NULL`, not invented IDs, zero amounts or non-USD rates of one. Missing data needed to value/scope a financial event blocks a complete result.
-- USD-denominated principal can populate `amount_usd_reported` directly. Otherwise use only the supplied USD equivalent, never net-after-fee amounts or our FX calculation. Shared FX processing adds `fx_rate_selected` and `amount_usd_normalized` (`DECIMAL(38,18)`); no premature cent rounding.
+- USD-denominated principal can populate `amount_usd_reported` directly. Otherwise use only the supplied USD equivalent, never net-after-fee amounts. When USD is absent, shared FX processing uses the latest revision for the most recent rate date not after the UTC event date and retains the high-precision calculation. Reconciliation rounds calculated USD to cents at event grain; staging remains unrounded.
 - The event key is `(psp, provider_event_id)`; uniqueness checks and event joins use both fields. Use the source event ID when unique within `psp`; otherwise derive it from a verified natural key, including account context if needed. Exclude filenames and row positions. Distinct refunds/transitions remain distinct.
 - Keep all raw copies; remove confirmed same-event, equal-payload copies in provider staging before casting. Control raw-to-staging row counts and report duplicates as DQ findings without assigning financial impact. Across files, removal still requires verified identity and idempotent ingestion. PayPal US currently removes exact copies within its single export. No `source_row_id`.
 - Conflicting payloads or ambiguous identities remain in exception outputs and source controls, not arbitrary first/latest selections. Google Play's identical descriptive values alone do not prove duplication. Cross-system amount/status differences do not invalidate a reliable identity link.

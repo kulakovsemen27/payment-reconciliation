@@ -1,23 +1,32 @@
 {{ config(materialized='table', schema='intermediate') }}
 
--- Add each provider adapter here after it implements the shared event contract.
+with events as (
+    select * from {{ ref('int_paypal_us_events') }}
+    union all
+    select * from {{ ref('int_paypal_eu_events') }}
+),
+
+normalized as (
+    select
+        e.*,
+        case when e.currency = 'USD' then cast(1 as decimal(18, 10))
+            else f.usd_rate end as fx_rate_selected,
+        f.rate_date as fx_date_selected
+    from events as e
+    left join lateral (
+        select rate_date, usd_rate
+        from {{ ref('int_fx_rates') }} as rates
+        where rates.currency = e.currency
+            and rates.rate_date <= (e.event_timestamp_utc at time zone 'UTC')::date
+        order by rates.rate_date desc
+        limit 1
+    ) as f on true
+)
+
 select
-    provider_event_id,
-    psp,
-    provider_account,
-    source_file,
-    psp_reference,
-    parent_psp_reference,
-    order_id,
-    operation_type,
-    source_status,
-    status,
-    event_timestamp_utc,
-    country,
-    sku,
-    currency,
-    amount_local_signed,
-    amount_usd_reported,
-    fx_rate_reported,
-    is_financial_event
-from {{ ref('int_paypal_us_events') }}
+    *,
+    cast(coalesce(
+        amount_usd_reported,
+        amount_local_signed * fx_rate_selected
+    ) as decimal(38, 18)) as amount_usd_normalized
+from normalized

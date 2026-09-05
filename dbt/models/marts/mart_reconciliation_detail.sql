@@ -21,10 +21,15 @@ matched as (
         p.status as provider_status,
         e.currency as engine_currency,
         p.currency as provider_currency,
+        e.fx_date_applied as engine_fx_date,
+        p.fx_date_selected as provider_fx_date,
+        e.fx_rate_applied as engine_fx_rate,
+        p.fx_rate_selected as provider_fx_rate,
         e.amount_local_signed as engine_amount_local_signed,
         p.amount_local_signed as provider_amount_local_signed,
         e.amount_usd_signed as engine_amount_usd_signed,
         p.amount_usd_reported as provider_amount_usd_reported,
+        p.amount_usd_normalized as provider_amount_usd_normalized,
         e.event_timestamp_utc as engine_event_timestamp_utc,
         p.event_timestamp_utc as provider_event_timestamp_utc,
         case when e.engine_txn_id is null then false else e.is_financial_event end
@@ -48,7 +53,8 @@ measured as (
         cast(case when not engine_in_period or not engine_is_financial_event then 0
             else engine_amount_usd_signed end as decimal(38, 18)) as engine_recognized_usd,
         cast(case when not provider_in_period or not provider_is_financial_event then 0
-            else provider_amount_usd_reported end as decimal(38, 18)) as provider_recognized_usd,
+            else round(provider_amount_usd_normalized, 2) end as decimal(38, 18))
+            as provider_recognized_usd,
         case when match_status = 'matched' then
             engine_operation_type is distinct from provider_operation_type end
             as operation_type_differs,
@@ -59,7 +65,7 @@ measured as (
         case when engine_currency = provider_currency
             then provider_amount_local_signed - engine_amount_local_signed end
             as amount_local_difference,
-        provider_amount_usd_reported - engine_amount_usd_signed
+        provider_amount_usd_normalized - engine_amount_usd_signed
             as amount_usd_difference
     from matched
     where engine_in_period or provider_in_period
@@ -82,13 +88,18 @@ select
             or engine_is_financial_event is null
             or provider_is_financial_event is null then 'unexplained'
         when match_status = 'engine_only' then 'engine_only'
+        when match_status = 'provider_only'
+            and provider_operation_type = 'REFUND' then 'refund_missing_in_engine'
+        when match_status = 'provider_only'
+            and provider_operation_type = 'REVERSAL' then 'reversal_missing_in_engine'
         when match_status = 'provider_only' then 'provider_only'
         when operation_type_differs or currency_differs then 'unexplained'
         when status_differs then 'status_lifecycle_difference'
         when engine_is_financial_event and provider_is_financial_event
             and engine_in_period <> provider_in_period then 'cutoff_timing'
-        when signed_usd_impact <> 0 or amount_usd_difference <> 0
-            or amount_local_difference <> 0 then 'amount_difference'
+        when signed_usd_impact <> 0 and amount_local_difference = 0
+            and engine_fx_rate is distinct from provider_fx_rate then 'fx_difference'
+        when signed_usd_impact <> 0 then 'amount_difference'
         else 'matched'
     end as cause
 from impacts
