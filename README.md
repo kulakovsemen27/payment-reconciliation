@@ -11,46 +11,28 @@ Reconciles payment-engine records against PayPal, Adyen, dLocal and Google Play 
 
 ## How the pipeline works
 
-```mermaid
-flowchart LR
-    INPUT[CSV snapshots]
-
-    subgraph RAW[RAW]
-        R[Load source columns<br/>as text]
-    end
-
-    subgraph STAGING[STAGING]
-        S[Parse types, amounts<br/>and UTC timestamps]
-        D[Remove confirmed<br/>exact copies]
-        S --> D
-    end
-
-    subgraph INTERMEDIATE[INTERMEDIATE]
-        N[Map sources to common<br/>engine, event and fee contracts]
-        X[Value provider events<br/>with reported or reference FX]
-        M[Apply provider-specific<br/>one-to-one matching]
-        N --> X
-        X --> M
-    end
-
-    subgraph MARTS[MARTS]
-        P[Keep matched, engine-only<br/>and provider-only events]
-        C[Apply UTC month, measure<br/>USD impact and assign cause]
-        A[Aggregate payments<br/>by provider and cause]
-        F[Select effective tariff<br/>and compare reported fees]
-        P --> C --> A
-    end
-
-    subgraph OUTPUTS[OUTPUTS]
-        O[Payment and fee<br/>summaries and details]
-    end
-
-    INPUT --> R --> S
-    D --> N
-    M --> P
-    X --> F
-    A --> O
-    F --> O
+```text
+CSV snapshots
+      |
+[RAW] load source values as text
+      |
+[STAGING] parse types, amounts and UTC timestamps
+          remove confirmed exact copies
+      |
+[INTERMEDIATE] map source rows to common engine, event and fee contracts
+      |
+      +-- provider events --> apply reported/reference FX --> one-to-one matching
+      |                                                        |
+      |                                                        v
+      |   [MARTS / payments] keep all events --> apply month --> measure and classify
+      |                                                        |
+      |                                                        v
+      |                                      provider × cause summary and details
+      |
+      +-- provider fees + normalized events --> [MARTS / fees] apply effective tariff
+                                                               |
+                                                               v
+                                                fee summary and transaction details
 ```
 
 Match full extracts before applying the month boundary, preserving late settlements and unmatched events. Amounts are comparison fields, not matching keys. Signed payment impact is **provider − engine**; fees are separate.
