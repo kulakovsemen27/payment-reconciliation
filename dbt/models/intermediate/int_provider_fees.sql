@@ -1,4 +1,4 @@
-{{ config(materialized='table', schema='intermediate') }}
+{{ config(materialized='view', schema='intermediate') }}
 
 select * from {{ ref('int_paypal_us_fees') }}
 union all
