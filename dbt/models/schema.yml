@@ -23,7 +23,7 @@ models:
       One distinct PayPal US source record after removing exact copies before type conversion.
     columns:
       - name: transaction_id
-        description: Original Transaction ID; exact copies removed, differing payloads retained without a blanket unique test.
+        description: Original Transaction ID; exact copies removed, differing payloads retained.
         data_tests:
           - not_null
       - name: reference_txn_id
@@ -64,7 +64,7 @@ models:
         data_tests:
           - not_null
       - name: source_file
-        description: Relative source filename; no synthetic row number is introduced.
+        description: Relative source filename.
 
   - name: paypal_eu_activity
     description: >-
@@ -83,7 +83,7 @@ models:
       - name: reference_txn_id
         description: Optional reference to the original payment.
       - name: invoice_id
-        description: Optional merchant order reference, not yet matched to engine.
+        description: Optional merchant order reference.
       - name: transaction_type
         description: Original PayPal Type, before canonical mapping.
         data_tests:
@@ -117,7 +117,7 @@ models:
         data_tests:
           - not_null
       - name: source_file
-        description: Relative source filename, without synthetic row numbers.
+        description: Relative source filename.
 
   - name: dlocal_transactions
     description: dLocal CSV records as text, preserving copies and relative source_file.
@@ -144,7 +144,7 @@ models:
         description: DECIMAL(20,8) major units; source integer multiplied by 10 to the power of minus currency_exponent.
         data_tests: [not_null]
       - name: fx_rate
-        description: Source rate as DECIMAL(18,10), local currency per USD; not yet inverted.
+        description: Source rate in local currency per USD; inverted in the event model.
         data_tests: [not_null]
       - name: usd_amount
         data_tests: [not_null]
@@ -247,10 +247,10 @@ models:
     description: >-
       One PayPal US operation per transaction ID, mapped to the provider-event contract.
       Completed payments and refunded operations are settled financial events; denied
-      payments are declined non-financial attempts. No June filter, engine join or fee extraction.
+      payments are declined non-financial attempts.
     columns:
       - name: provider_event_id
-        description: Original transaction_id, without a provider prefix; unique together with psp. Conflicting keys fail rather than being arbitrarily resolved.
+        description: Original transaction_id; unique together with psp. Conflicting keys fail validation.
         data_tests: [not_null]
       - name: psp
         data_tests: [not_null]
@@ -384,8 +384,19 @@ models:
 
   - name: int_provider_events
     description: >-
-      Union of validated provider adapters enriched with the latest available FX rate on or
-      before the UTC event date and a high-precision normalized USD principal amount.
+      One event per (psp, provider_event_id), combined from provider adapters and valued in USD.
+      FX uses the latest revision of the most recent rate dated on/before the UTC event date.
+    columns:
+      - name: provider_event_id
+        description: Event identity within psp; source references may identify a payment with multiple operations.
+      - name: amount_local_signed
+        description: Principal before fees in major currency units; sales positive, refunds/chargebacks negative.
+      - name: amount_usd_reported
+        description: Provider-reported USD principal, never net after fees; NULL when not supplied.
+      - name: amount_usd_normalized
+        description: Reported USD or local principal converted at the selected rate; rounded to cents in reconciliation.
+      - name: is_financial_event
+        description: Whether the event contributes to principal totals; non-financial attempts retain their identity.
 
   - name: mart_reconciliation_detail
     description: >-
