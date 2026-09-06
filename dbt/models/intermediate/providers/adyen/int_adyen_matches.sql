@@ -12,6 +12,7 @@ where e.psp = 'adyen' and p.operation_type = 'SALE'
 
 union all
 
+-- Engine modification references differ; link refunds/chargebacks by order and operation.
 select
     e.psp,
     e.engine_txn_id,

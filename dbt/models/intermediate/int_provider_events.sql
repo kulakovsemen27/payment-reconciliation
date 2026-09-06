@@ -19,6 +19,7 @@ normalized as (
             else f.usd_rate end as fx_rate_selected,
         f.rate_date as fx_date_selected
     from events as e
+    -- Use the most recent rate date not after this event; revisions are resolved upstream.
     left join lateral (
         select rate_date, usd_rate
         from {{ ref('int_fx_rates') }} as rates

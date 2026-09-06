@@ -6,6 +6,7 @@ select
     p.provider_event_id,
     'timestamp_and_attributes' as match_method
 from {{ ref('int_payment_engine_events') }} as e
+-- Exclude amounts from matching so monetary differences remain detectable.
 join {{ ref('int_google_play_events') }} as p
     on e.psp = p.psp
     and e.event_timestamp_utc = p.event_timestamp_utc
@@ -14,5 +15,6 @@ join {{ ref('int_google_play_events') }} as p
     and e.country = p.country
     and e.currency = p.currency
 where e.psp = 'google_play'
+-- Accept only one-to-one candidates; ambiguous candidates remain unmatched.
 qualify count(*) over (partition by e.engine_txn_id) = 1
     and count(*) over (partition by p.provider_event_id) = 1

@@ -27,6 +27,7 @@ contracted as (
         schedule.fixed_fee,
         schedule.fixed_fee_currency
     from {{ ref('int_provider_events') }} as e
+    -- Only sales covered by an effective account tariff enter fee reconciliation.
     join lateral (
         select valid_from, percent_fee, fixed_fee, fixed_fee_currency
         from {{ ref('stg_fee_schedule') }} as schedule

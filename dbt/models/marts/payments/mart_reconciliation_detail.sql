@@ -9,6 +9,7 @@ provider as (
     select * from {{ ref('int_provider_events') }}
 ),
 
+-- Retain unmatched events from either side, including when a provider has no rows.
 pairs as (
     select
         psp,
@@ -49,6 +50,7 @@ pairs as (
     )
 ),
 
+-- Matching precedes the month filter so late settlements remain linked across periods.
 matched as (
     select
         cast('{{ var("report_month") }}' as date) as report_month,
@@ -127,6 +129,7 @@ impacts as (
 select
     *,
     abs(signed_usd_impact) as absolute_usd_impact,
+    -- First applicable cause wins: missing/status/timing differences precede valuation.
     case
         when engine_recognized_usd is null or provider_recognized_usd is null
             or engine_in_period is null or provider_in_period is null
