@@ -163,6 +163,8 @@ def write_profile(directory: Path, database: Path) -> None:
         f"      path: {json.dumps(str(database.resolve()))}",
         "      schema: main",
         "      threads: 1",
+        "      extensions:",
+        "        - encodings",
         "      settings:",
         "        TimeZone: UTC",
         "",

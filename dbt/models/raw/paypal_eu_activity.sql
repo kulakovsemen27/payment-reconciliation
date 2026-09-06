@@ -1,11 +1,7 @@
 {{
     config(
         materialized='table',
-        schema='raw',
-        pre_hook=[
-            "INSTALL encodings FROM 'https://extensions.duckdb.org'",
-            "LOAD encodings"
-        ]
+        schema='raw'
     )
 }}
 
