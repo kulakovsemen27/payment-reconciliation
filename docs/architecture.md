@@ -10,17 +10,18 @@ CSV snapshots → raw → staging → intermediate → marts → CSV reports
 |---|---|
 | `raw` | Load source files as text without any transformations. |
 | `staging` | Parse source-specific types, units and timestamps; remove duplicated rows. |
-| `intermediate` | Normalize events and fees across all providers, apply FX rates and match provider events to the engine. |
-| `marts` | Calculate, classify and aggregate principal and fee differences. |
+| `intermediate/<provider>` | Normalize provider events and fees, and apply provider-specific matching. |
+| `intermediate/shared` | Normalize engine events, apply FX rates and combine provider interfaces. |
+| `marts/principal` | Calculate, classify and aggregate principal differences. |
+| `marts/fees` | Calculate and aggregate fee differences. |
 
-## Shared Models
+## Key Models
 
-- `int_payment_engine_events`: normalized internal events.
 - `int_provider_events`: common provider-event contract.
 - `int_provider_matches`: accepted provider-specific matches.
-- `int_provider_fees`: provider fee components.
-- `mart_reconciliation_*`: principal reconciliation detail and summary.
-- `mart_fee_reconciliation_*`: contracted-fee detail and summary.
+- `int_provider_fees`: reported provider fees.
+- `mart_reconciliation_detail` and `mart_reconciliation_summary`: principal reconciliation.
+- `mart_fee_reconciliation_detail` and `mart_fee_reconciliation_summary`: fee reconciliation.
 
 Provider fields and matching rules are documented in [provider_contract.md](provider_contract.md).
 

@@ -2,11 +2,13 @@
 
 A dbt pipeline that reconciles payment-engine records with PayPal, Adyen, dLocal and Google Play reports for June 2026.
 
-## What It Produces
+## Review Guide
 
-- principal differences by provider and cause;
-- reported versus contracted fees where a fee schedule is available;
-- a short summary of findings, assumptions and recommended actions.
+- [Findings and recommended actions](outputs/analysis_note.md)
+- Principal: [summary](outputs/reconciliation_summary.csv) and [transaction details](outputs/reconciliation_details.csv)
+- Fees: [summary](outputs/fee_reconciliation_summary.csv) and [transaction details](outputs/fee_reconciliation_details.csv)
+- Core SQL: [principal reconciliation](dbt/models/marts/principal/mart_reconciliation_detail.sql) and [fee reconciliation](dbt/models/marts/fees/mart_fee_reconciliation_detail.sql)
+- [Architecture](docs/architecture.md) and [provider rules](docs/provider_contract.md)
 
 ## Stack
 
@@ -23,13 +25,6 @@ python -m pip install -r requirements.txt
 python run_pipeline.py --report-month 2026-06-01
 ```
 
-The command validates the input files, runs all dbt models and tests, and writes:
-
-- `outputs/reconciliation_summary.csv`
-- `outputs/reconciliation_details.csv`
-- `outputs/fee_reconciliation_summary.csv`
-- `outputs/fee_reconciliation_details.csv`
-
-Written findings are in `outputs/analysis_note.md`.
+The command validates inputs, builds and tests all dbt models, and refreshes the files in `outputs/`.
 
 Disconnect other DuckDB clients before running the pipeline.
