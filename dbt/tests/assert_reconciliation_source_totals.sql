@@ -1,13 +1,9 @@
-with implemented as (
-    select distinct psp from {{ ref('int_provider_events') }}
-),
-engine as (
+with engine as (
     select psp,
         count(*) as records,
         sum(is_financial_event::integer) as financial_events,
         sum(case when is_financial_event then amount_usd_signed else 0 end) as amount_usd
     from {{ ref('int_payment_engine_events') }}
-    join implemented using (psp)
     where date_trunc('month', scope_timestamp_utc at time zone 'UTC')::date
         = cast('{{ var("report_month") }}' as date)
     group by psp
@@ -41,9 +37,15 @@ select coalesce(e.psp, p.psp, d.psp) as psp
 from engine as e
 full outer join provider as p using (psp)
 full outer join detail as d on d.psp = coalesce(e.psp, p.psp)
-where e.records is distinct from d.engine_records
-    or p.records is distinct from d.provider_records
-    or e.financial_events is distinct from d.engine_financial_events
-    or p.financial_events is distinct from d.provider_financial_events
-    or e.amount_usd is distinct from d.engine_amount_usd
-    or p.amount_usd is distinct from d.provider_amount_usd
+-- An absent source group contributes zero; NULL values in an existing group do not.
+where d.psp is null
+    or coalesce(e.records, 0) is distinct from d.engine_records
+    or coalesce(p.records, 0) is distinct from d.provider_records
+    or (case when e.psp is null then 0 else e.financial_events end)
+        is distinct from d.engine_financial_events
+    or (case when p.psp is null then 0 else p.financial_events end)
+        is distinct from d.provider_financial_events
+    or (case when e.psp is null then 0 else e.amount_usd end)
+        is distinct from d.engine_amount_usd
+    or (case when p.psp is null then 0 else p.amount_usd end)
+        is distinct from d.provider_amount_usd

@@ -3,7 +3,6 @@
 with engine as (
     select *
     from {{ ref('int_payment_engine_events') }}
-    where psp in (select distinct psp from {{ ref('int_provider_events') }})
 ),
 
 provider as (
