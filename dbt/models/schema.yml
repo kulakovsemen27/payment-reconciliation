@@ -59,12 +59,6 @@ models:
         description: Source Net as DECIMAL(20,8); equals Gross plus signed Fee for Completed/Refunded rows.
         data_tests:
           - not_null
-      - name: date_raw
-        description: Original MM/DD/YYYY date text.
-      - name: time_raw
-        description: Original HH:MM:SS time text.
-      - name: time_zone
-        description: Supplied timezone, used explicitly in timestamp parsing.
       - name: event_timestamp_utc
         description: Timezone-aware event timestamp; displayed in UTC when the session timezone is UTC.
         data_tests:
@@ -118,12 +112,6 @@ models:
         description: Source Net as DECIMAL(20,8); Gross plus Fee for financial rows.
         data_tests:
           - not_null
-      - name: date_raw
-        description: Original date text, retained for investigating source date anomalies.
-      - name: time_raw
-        description: Original time text.
-      - name: time_zone
-        description: Supplied timezone, used explicitly in parsing.
       - name: event_timestamp_utc
         description: Timezone-aware timestamp resolved against the export period; invalid or out-of-period values become NULL.
         data_tests:
@@ -163,8 +151,6 @@ models:
       - name: fee_usd
         description: Reported fee in USD, retaining the source sign.
         data_tests: [not_null]
-      - name: created_at_raw
-        description: Original UTC timestamp text.
       - name: event_timestamp_utc
         data_tests: [not_null]
 
@@ -192,8 +178,6 @@ models:
         data_tests: [not_null]
       - name: net_currency
         data_tests: [not_null]
-      - name: creation_date_raw
-        description: Original local timestamp; interpreted using the source TimeZone field.
       - name: event_timestamp_utc
         data_tests: [not_null]
 

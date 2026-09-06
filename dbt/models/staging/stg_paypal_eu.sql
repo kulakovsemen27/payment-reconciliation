@@ -38,9 +38,6 @@ select
     try_cast(replace("Gross", ',', '.') as decimal(20, 8)) as gross_amount,
     try_cast(replace("Fee", ',', '.') as decimal(20, 8)) as fee_amount,
     try_cast(replace("Net", ',', '.') as decimal(20, 8)) as net_amount,
-    "Date" as date_raw,
-    "Time" as time_raw,
-    "Time Zone" as time_zone,
     try_strptime(
         strftime(case
             when dmy_timestamp::date between extract_start and extract_end then dmy_timestamp

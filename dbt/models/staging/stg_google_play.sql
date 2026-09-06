@@ -16,8 +16,6 @@ with parsed_dates as (
 )
 
 select
-    "Transaction Date" as date_raw,
-    "Transaction Time" as time_raw,
     -- Both source report headers explicitly specify this timezone.
     local_timestamp at time zone 'America/Los_Angeles' as event_timestamp_utc,
     "Transaction Type" as transaction_type,

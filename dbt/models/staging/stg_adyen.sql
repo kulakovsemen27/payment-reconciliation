@@ -14,8 +14,6 @@ select
     "Psp Reference" as psp_reference,
     "Merchant Reference" as merchant_reference,
     "Record Type" as record_type,
-    "Creation Date" as creation_date_raw,
-    "TimeZone" as time_zone,
     try_strptime(
         strftime(local_timestamp, '%Y-%m-%d %H:%M:%S') || ' ' || "TimeZone",
         '%Y-%m-%d %H:%M:%S %Z'

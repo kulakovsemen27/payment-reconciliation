@@ -15,7 +15,6 @@ select
     invoice_id,
     transaction_type,
     status,
-    created_at_utc as created_at_raw,
     try_strptime(created_at_utc, '%Y-%m-%d %H:%M:%S')
         at time zone 'UTC' as event_timestamp_utc,
     country,

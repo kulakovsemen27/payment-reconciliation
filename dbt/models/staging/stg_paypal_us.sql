@@ -49,9 +49,6 @@ select
     gross_amount,
     fee_amount,
     net_amount,
-    date_raw,
-    time_raw,
-    time_zone,
     event_timestamp_utc,
     source_file
 from parsed
