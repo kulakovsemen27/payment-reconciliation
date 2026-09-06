@@ -34,6 +34,9 @@ models:
         description: Original PayPal Type, before canonical operation mapping.
         data_tests:
           - not_null
+          - accepted_values:
+              arguments:
+                values: [Website Payment, Refund]
       - name: status
         description: Original PayPal status; these values define this export's supported states.
         data_tests:
@@ -91,6 +94,9 @@ models:
         description: Original PayPal Type, before canonical mapping.
         data_tests:
           - not_null
+          - accepted_values:
+              arguments:
+                values: [Website Payment, Refund, Payment Reversal]
       - name: status
         description: Original PayPal status.
         data_tests:
@@ -134,7 +140,11 @@ models:
       - name: transaction_id
         data_tests: [not_null]
       - name: transaction_type
-        data_tests: [not_null]
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [PAYMENT, REFUND]
       - name: status
         data_tests: [not_null]
       - name: currency
@@ -173,7 +183,11 @@ models:
       - name: merchant_account
         data_tests: [not_null]
       - name: record_type
-        data_tests: [not_null]
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [Authorised, Settled, Refused, Refunded, Chargeback]
       - name: gross_currency
         data_tests: [not_null]
       - name: net_currency
@@ -193,7 +207,11 @@ models:
       No matching, fee pairing or canonical sign changes here.
     columns:
       - name: transaction_type
-        data_tests: [not_null]
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [Charge, Charge refund, Google fee]
       - name: product_id
         data_tests: [not_null]
       - name: buyer_currency
@@ -435,3 +453,9 @@ models:
         data_tests:
           - not_null
           - unique
+      - name: operation_type
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [SALE, REFUND, CHARGEBACK]
