@@ -34,13 +34,9 @@ PRINCIPAL_QUERY = """
         report_month,
         psp,
         cause,
-        row_count,
         engine_record_count,
         provider_record_count,
         record_count_difference,
-        engine_financial_count,
-        provider_financial_count,
-        financial_count_difference,
         cast(engine_amount_usd as decimal(20, 2)) as engine_amount_usd,
         cast(provider_amount_usd as decimal(20, 2)) as provider_amount_usd,
         cast(signed_usd_impact as decimal(20, 2)) as signed_usd_impact,
@@ -66,6 +62,60 @@ FEE_QUERY = """
         cast(absolute_fee_variance_usd as decimal(20, 2)) as absolute_fee_variance_usd
     from marts.mart_fee_reconciliation_summary
     order by report_month, psp, provider_account, fee_currency, cause
+"""
+PRINCIPAL_EXCEPTIONS_QUERY = """
+    select
+        report_month,
+        psp,
+        engine_txn_id,
+        provider_event_id,
+        match_status,
+        cause,
+        engine_operation_type,
+        provider_operation_type,
+        engine_status,
+        provider_status,
+        strftime(
+            engine_event_timestamp_utc at time zone 'UTC',
+            '%Y-%m-%dT%H:%M:%SZ'
+        ) as engine_event_timestamp_utc,
+        strftime(
+            provider_event_timestamp_utc at time zone 'UTC',
+            '%Y-%m-%dT%H:%M:%SZ'
+        ) as provider_event_timestamp_utc,
+        engine_currency,
+        provider_currency,
+        engine_amount_local_signed as engine_amount_local,
+        provider_amount_local_signed as provider_amount_local,
+        cast(engine_amount_usd_signed as decimal(20, 2)) as engine_amount_usd,
+        cast(provider_amount_usd_normalized as decimal(20, 2)) as provider_amount_usd,
+        cast(signed_usd_impact as decimal(20, 2)) as signed_usd_impact
+    from marts.mart_reconciliation_detail
+    where cause <> 'matched'
+    order by report_month, psp, cause, engine_txn_id, provider_event_id
+"""
+FEE_EXCEPTIONS_QUERY = """
+    select
+        report_month,
+        psp,
+        provider_event_id,
+        provider_account,
+        strftime(
+            event_timestamp_utc at time zone 'UTC',
+            '%Y-%m-%dT%H:%M:%SZ'
+        ) as event_timestamp_utc,
+        fee_currency,
+        contract_valid_from,
+        cast(percent_fee as decimal(12, 4)) as percent_fee,
+        cast(fixed_fee as decimal(20, 2)) as fixed_fee,
+        fixed_fee_currency,
+        cast(reported_fee_local as decimal(20, 2)) as reported_fee_local,
+        cast(expected_fee_local as decimal(20, 2)) as expected_fee_local,
+        cast(signed_fee_variance_local as decimal(20, 2)) as signed_fee_variance_local,
+        cast(signed_fee_variance_usd as decimal(20, 2)) as signed_fee_variance_usd
+    from marts.mart_fee_reconciliation_detail
+    where cause <> 'matched'
+    order by report_month, psp, provider_account, provider_event_id
 """
 
 
@@ -159,6 +209,16 @@ def export_reports(database: Path, output_dir: Path) -> None:
     with duckdb.connect(str(database), read_only=True) as connection:
         write_csv(connection, PRINCIPAL_QUERY, output_dir / "reconciliation_summary.csv")
         write_csv(connection, FEE_QUERY, output_dir / "fee_reconciliation_summary.csv")
+        write_csv(
+            connection,
+            PRINCIPAL_EXCEPTIONS_QUERY,
+            output_dir / "reconciliation_details.csv",
+        )
+        write_csv(
+            connection,
+            FEE_EXCEPTIONS_QUERY,
+            output_dir / "fee_reconciliation_details.csv",
+        )
 
 
 def main() -> None:

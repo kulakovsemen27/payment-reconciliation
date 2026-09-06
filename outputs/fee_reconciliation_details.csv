@@ -1,0 +1,9 @@
+report_month,psp,provider_event_id,provider_account,event_timestamp_utc,fee_currency,contract_valid_from,percent_fee,fixed_fee,fixed_fee_currency,reported_fee_local,expected_fee_local,signed_fee_variance_local,signed_fee_variance_usd
+2026-06-01,adyen,8620000000001791:sale,LumoAPP_US,2026-06-24T15:05:00Z,USD,2026-01-01,2.5000,0.00,,1.10,0.62,0.48,0.48
+2026-06-01,adyen,8620000000001790:sale,LumoECOM_EU,2026-06-13T15:30:00Z,EUR,2026-01-01,2.5000,0.00,,2.64,1.50,1.14,1.24
+2026-06-01,google_play,2026-06-17T09:21:00|charge|sub_monthly|US|USD,LumoPlayMain,2026-06-17T09:21:00Z,USD,2026-01-01,15.0000,0.00,,3.00,1.50,1.50,1.50
+2026-06-01,google_play,2026-06-17T11:13:00|charge|sub_monthly|US|USD,LumoPlayMain,2026-06-17T11:13:00Z,USD,2026-01-01,15.0000,0.00,,3.00,1.50,1.50,1.50
+2026-06-01,google_play,2026-06-17T11:49:00|charge|sub_monthly|US|USD,LumoPlayMain,2026-06-17T11:49:00Z,USD,2026-01-01,15.0000,0.00,,3.00,1.50,1.50,1.50
+2026-06-01,google_play,2026-06-17T13:46:00|charge|sub_monthly|US|USD,LumoPlayMain,2026-06-17T13:46:00Z,USD,2026-01-01,15.0000,0.00,,3.00,1.50,1.50,1.50
+2026-06-01,google_play,2026-06-17T14:20:00|charge|sub_monthly|US|USD,LumoPlayMain,2026-06-17T14:20:00Z,USD,2026-01-01,15.0000,0.00,,3.00,1.50,1.50,1.50
+2026-06-01,google_play,2026-06-17T14:30:00|charge|sub_monthly|US|USD,LumoPlayMain,2026-06-17T14:30:00Z,USD,2026-01-01,15.0000,0.00,,3.00,1.50,1.50,1.50

@@ -26,7 +26,9 @@ python run_pipeline.py --report-month 2026-06-01
 The command validates the input files, runs all dbt models and tests, and writes:
 
 - `outputs/reconciliation_summary.csv`
+- `outputs/reconciliation_details.csv`
 - `outputs/fee_reconciliation_summary.csv`
+- `outputs/fee_reconciliation_details.csv`
 
 Written findings are in `outputs/analysis_note.md`.
 
