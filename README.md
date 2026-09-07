@@ -75,11 +75,22 @@ run_pipeline.py              build, test and CSV export
 Python 3.13 · DuckDB · dbt
 
 ## Run
+
+Clone the repository and run the pipeline from its root directory:
+
 ```bash
+git clone https://github.com/kulakovsemen27/payment-reconciliation.git
+cd payment-reconciliation
+
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
+
 python run_pipeline.py --report-month 2026-06-01
 ```
 
-The runner builds and tests all models, then refreshes four CSV reports in `outputs/`. The findings note is a written analysis. Disconnect other DuckDB clients before running.
+A successful run:
+
+- builds all DuckDB/dbt models and runs the data-quality tests;
+- creates `reconciliation.duckdb` (you can access it with any IDE);
+- refreshes the four CSV reports in `outputs/`.
